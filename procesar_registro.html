@@ -1,0 +1,117 @@
+<?php
+include 'conexion.php';
+
+// Activar errores para depuración (quitar en producción)
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Función para limpiar entradas (evitar espacios y caracteres HTML)
+function limpiar($dato) {
+    return htmlspecialchars(trim($dato));
+}
+
+// Recoger y limpiar datos
+$nombre = isset($_POST['nombre']) ? limpiar($_POST['nombre']) : '';
+$correo = isset($_POST['correo']) ? limpiar($_POST['correo']) : '';
+$contrasena = isset($_POST['contrasena']) ? $_POST['contrasena'] : '';
+$telefono = isset($_POST['telefono']) ? limpiar($_POST['telefono']) : '';
+
+// Validaciones básicas
+$errores = [];
+
+// Validar nombre
+if (empty($nombre)) {
+    $errores[] = "El nombre es obligatorio.";
+} elseif (strlen($nombre) < 3) {
+    $errores[] = "El nombre debe tener al menos 3 caracteres.";
+} elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/u", $nombre)) {
+    $errores[] = "El nombre solo debe contener letras y espacios.";
+}
+
+// Validar correo
+if (empty($correo)) {
+    $errores[] = "El correo es obligatorio.";
+} elseif (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+    $errores[] = "El correo no es válido.";
+}
+
+// Validar contraseña
+if (empty($contrasena)) {
+    $errores[] = "La contraseña es obligatoria.";
+} elseif (strlen($contrasena) < 6) {
+    $errores[] = "La contraseña debe tener al menos 6 caracteres.";
+}
+
+// Validar teléfono (opcional, pero si se envía validar formato básico)
+if (!empty($telefono) && !preg_match('/^[0-9+\-\s]{7,15}$/', $telefono)) {
+    $errores[] = "El teléfono no tiene un formato válido.";
+}
+
+if (count($errores) > 0) {
+    mostrarMensaje('Error de validación', $errores, false);
+    exit;
+}
+
+try {
+    // Verificar si correo ya existe
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE correo = ?");
+    $stmt->execute([$correo]);
+    if ($stmt->fetchColumn() > 0) {
+        mostrarMensaje('Este correo ya está registrado.', [], false);
+        exit;
+    }
+
+    // Hashear la contraseña
+    $hash_contrasena = password_hash($contrasena, PASSWORD_DEFAULT);
+
+    // Insertar usuario
+    $sql = "INSERT INTO usuarios (nombre, correo, contrasena, telefono) VALUES (?, ?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    $insertado = $stmt->execute([$nombre, $correo, $hash_contrasena, $telefono]);
+
+    if ($insertado) {
+        $id_usuario = $pdo->lastInsertId();
+        mostrarMensaje("¡Registro exitoso!", ["Tu ID de usuario es: <strong>" . htmlspecialchars($id_usuario) . "</strong>"], true);
+    } else {
+        mostrarMensaje("Error al registrar usuario. Intenta nuevamente.", [], false);
+    }
+
+} catch (PDOException $e) {
+    mostrarMensaje("Error de servidor: " . htmlspecialchars($e->getMessage()), [], false);
+}
+
+// Función para mostrar mensajes con estilo
+function mostrarMensaje($titulo, $mensajes = [], $exito = true) {
+    $clase = $exito ? 'success' : 'error';
+    echo "<!DOCTYPE html>
+    <html lang='es'>
+    <head>
+        <meta charset='UTF-8'>
+        <title>Mensaje</title>
+        <style>
+            body { font-family: 'Inter', sans-serif; background: #f4f6f8; padding: 40px; display: flex; justify-content: center; align-items: center; height: 100vh; }
+            .mensaje { max-width: 450px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+            .success { background: #d1fae5; color: #065f46; border: 2px solid #10b981; }
+            .error { background: #fee2e2; color: #991b1b; border: 2px solid #ef4444; }
+            h1 { margin-top: 0; }
+            ul { padding-left: 20px; }
+            a { display: inline-block; margin-top: 20px; text-decoration: none; color: #667eea; font-weight: 600; }
+            a:hover { text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <div class='mensaje $clase'>
+            <h1>$titulo</h1>";
+    if (!empty($mensajes)) {
+        echo "<ul>";
+        foreach ($mensajes as $msg) {
+            echo "<li>$msg</li>";
+        }
+        echo "</ul>";
+    }
+    echo "<a href='registro.php'>Volver al formulario</a>
+        </div>
+    </body>
+    </html>";
+}
+

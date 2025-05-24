@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recuperar Contraseña</title>
+<style>
+  /* Reset básico */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #222;
+}
+
+  .formulario {
+    background-color: #fff;
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    transition: box-shadow 0.3s ease;
+  }
+  .formulario:hover {
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  }
+
+  h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #2c3e50;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    color: #34495e;
+  }
+
+  input[type="email"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid #bdc3c7;
+    border-radius: 10px;
+    transition: border-color 0.3s ease;
+  }
+  input[type="email"]:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 6px #3498dbaa;
+  }
+
+  input[type="submit"] {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #27ae60;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  input[type="submit"]:hover,
+  input[type="submit"]:focus {
+    background-color: #219150;
+    outline: none;
+  }
+
+  /* Mensajes de error o éxito (si los usas) */
+  .mensaje {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: #e74c3c; /* rojo para errores */
+  }
+</style>
+</head>
+<body>
+
+<div class="formulario" role="main" aria-labelledby="titulo-recuperacion">
+  <h2 id="titulo-recuperacion">Recuperar Contraseña</h2>
+
+  <form action="procesar_recuperacion.php" method="POST" novalidate>
+    <label for="correo">Ingresa tu correo electrónico:</label>
+    <input type="email" name="correo" id="correo" placeholder="ejemplo@correo.com" required autocomplete="email" aria-required="true" aria-describedby="correoHelp" />
+    <small id="correoHelp" style="display:none;">Introduce un correo válido</small>
+    <input type="submit" value="Enviar enlace de recuperación" />
+  </form>
+</div>
+
+</body>
+</html>
